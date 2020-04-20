@@ -36,7 +36,8 @@ FLT_PREOP_CALLBACK_STATUS preCreateOperation(_Inout_ PFLT_CALLBACK_DATA data,
 		/*		and the request is complete.									*
 		/************************************************************************/
 
-		// ENTER CODE HERE
+		data->IoStatus.Status = STATUS_APPEXEC_CONDITION_NOT_SATISFIED;
+		data->IoStatus.Information = 0;
 
 		return FLT_PREOP_SUCCESS_NO_CALLBACK;
 
