@@ -13,9 +13,9 @@ BOOLEAN isThreatByFilename(PUNICODE_STRING fileName) {
 
 	// ENTER CODE HERE
 
-	UNREFERENCED_PARAMETER(fileName);
+	BOOLEAN rv = FsRtlIsNameInExpression(&THREAT_NAME, fileName, TRUE, NULL);
 
-	return false;
+	return rv;
 }
 
 

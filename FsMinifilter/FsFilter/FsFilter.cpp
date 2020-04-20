@@ -51,7 +51,7 @@ CONST FLT_REGISTRATION FilterRegistration = {
 NTSTATUS DriverEntry (_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath) {
 	
 	UNREFERENCED_PARAMETER(RegistryPath);
-
+	__debugbreak();
 	NTSTATUS status;
 
 	//  Register with FltMgr to tell it our callback routines
@@ -69,7 +69,7 @@ NTSTATUS DriverEntry (_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Reg
 		/*																		*
 		/************************************************************************/
 		
-		// ENTER CODE HERE
+		DbgPrint("Putty!");
 
 		if (!NT_SUCCESS( status )) {
 			FltUnregisterFilter( g_filterHandle );
