@@ -36,10 +36,10 @@ FLT_PREOP_CALLBACK_STATUS preCreateOperation(_Inout_ PFLT_CALLBACK_DATA data,
 		/*		and the request is complete.									*
 		/************************************************************************/
 
-		data->IoStatus.Status = STATUS_APPEXEC_CONDITION_NOT_SATISFIED;
+		data->IoStatus.Status = STATUS_VIRUS_INFECTED;
 		data->IoStatus.Information = 0;
 
-		return FLT_PREOP_SUCCESS_NO_CALLBACK;
+		return FLT_PREOP_COMPLETE;
 
 	} else {
 		data->IoStatus.Status = STATUS_SUCCESS;

@@ -15,13 +15,14 @@ bool registerProcessNotify() {
 	/*																		*
 	/************************************************************************/
 
-	// ENTER CODE HERE
+	NTSTATUS status = PsSetCreateProcessNotifyRoutineEx(processNotification, FALSE);
 
-	return false;
+	return status;
 }
 
 void unregisterProcessNotify() {
-	// ENTER CODE HERE
+
+	PsSetCreateProcessNotifyRoutineEx(processNotification, TRUE);
 }
 
 void processNotification(PEPROCESS process,
