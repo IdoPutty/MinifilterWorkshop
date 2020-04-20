@@ -1,5 +1,6 @@
 #pragma once
 #include <ntifs.h>
+#include <ntstrsafe.h>
 
 #define MAX_PATH 512
 
