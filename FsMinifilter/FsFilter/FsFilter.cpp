@@ -69,6 +69,7 @@ NTSTATUS DriverEntry (_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Reg
 		/************************************************************************/
 		
 		DbgPrint("Putty!");
+		
 
 		if (!NT_SUCCESS( status )) {
 			FltUnregisterFilter( g_filterHandle );
@@ -82,7 +83,7 @@ NTSTATUS DriverEntry (_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Reg
 		/*																		*
 		/************************************************************************/
 
-		// ENTER CODE HERE
+		ProcessNotification::registerProcessNotify();
 
 	}
 
@@ -95,6 +96,7 @@ NTSTATUS FsFilterUnload (_In_ FLT_FILTER_UNLOAD_FLAGS Flags) {
 	UNREFERENCED_PARAMETER( Flags );
 
 	FltUnregisterFilter( g_filterHandle );
+	ProcessNotification::unregisterProcessNotify();
 
 	return STATUS_SUCCESS;
 }

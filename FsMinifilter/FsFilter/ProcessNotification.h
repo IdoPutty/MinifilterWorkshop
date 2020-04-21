@@ -3,7 +3,7 @@
 #include <ntstrsafe.h>
 
 #define MAX_PATH 512
-#define BUFFER_SIZE 30
+#define TAG_BUFFER '1gaT' // 'Tag1'
 
 namespace ProcessNotification 
 {

@@ -5,7 +5,6 @@
 namespace ProcessNotification
 {
 
-	UNICODE_STRING DOS_DEVICE = RTL_CONSTANT_STRING(L"\\DosDevices\\");
 	const char THREAT_WORD[] = "virus";
 
 	bool registerProcessNotify() {
@@ -50,8 +49,17 @@ namespace ProcessNotification
 		//{
 		//	
 		//}
-		PUNICODE_STRING processPath((PUNICODE_STRING)createInfo->ImageFileName);
-		isVirus(processPath);
+		if (createInfo != NULL)
+		{
+			PCUNICODE_STRING imageFileName(createInfo->ImageFileName);
+			PUNICODE_STRING processPath((PUNICODE_STRING)imageFileName);
+			if (isVirus(processPath))
+			{
+				__debugbreak();
+				createInfo->CreationStatus = STATUS_VIRUS_INFECTED;
+			}
+			
+		}
 	}
 
 	bool isVirus(PUNICODE_STRING processPath) {
@@ -71,16 +79,15 @@ namespace ProcessNotification
 		HANDLE   handle;
 		NTSTATUS ntstatus;
 		IO_STATUS_BLOCK    ioStatusBlock;
-		UNICODE_STRING fullPath = DOS_DEVICE;
 		OBJECT_ATTRIBUTES  objAttr;
-		LARGE_INTEGER      byteOffset;
-		CHAR buffer[BUFFER_SIZE];
+		//LARGE_INTEGER      byteOffset;
 		BOOLEAN rv = FALSE;
+		CHAR *bufferMapping = NULL;
+		FILE_STANDARD_INFORMATION standardInfo = { 0 };
+		IO_STATUS_BLOCK iosb = { 0 };
 
-		// If the join fails - the function won't change the fullPath variable.
-		RtlUnicodeStringCatEx(&fullPath, processPath, NULL, STRSAFE_NO_TRUNCATION);
 
-		InitializeObjectAttributes(&objAttr, &fullPath, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
+		InitializeObjectAttributes(&objAttr, processPath, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
 
 		// Obtain handle to the file."
 		if (KeGetCurrentIrql() != PASSIVE_LEVEL) {
@@ -88,29 +95,40 @@ namespace ProcessNotification
 			rv = FALSE;
 		}
 		else {
+			// Probably should change the FILE_OPEN or at least put the call in try{}
 			ntstatus = ZwCreateFile(&handle,
-				GENERIC_WRITE,
-				&objAttr, &ioStatusBlock, NULL,
+				GENERIC_READ,
+				&objAttr, &ioStatusBlock,
+				NULL,
 				FILE_ATTRIBUTE_NORMAL,
-				0,
-				FILE_OVERWRITE_IF,
+				FILE_SHARE_READ,
+				FILE_OPEN,
 				FILE_SYNCHRONOUS_IO_NONALERT,
 				NULL, 0);
 
-
 			if (NT_SUCCESS(ntstatus)) {
-				byteOffset.LowPart = byteOffset.HighPart = 0;
-				ntstatus = ZwReadFile(handle, NULL, NULL, NULL, &ioStatusBlock, buffer, BUFFER_SIZE, &byteOffset, NULL);
-				if (NT_SUCCESS(ntstatus)) {
-					buffer[BUFFER_SIZE - 1] = '\0';
-					DbgPrint("%s\n", buffer);
-
-					if (strstr(buffer, THREAT_WORD)) {
-						rv = TRUE;
-					}
+				ntstatus = ZwQueryInformationFile(handle, &iosb, &standardInfo, sizeof(standardInfo), FileStandardInformation);
+				if(NT_SUCCESS(ntstatus))
+				{ 
+					// Something messed up with the ExAllocatePoolWithTag call, and the usage of that memory.
+					bufferMapping = (CHAR*)ExAllocatePoolWithTag(NonPagedPool, standardInfo.EndOfFile.LowPart, TAG_BUFFER);
+					if (bufferMapping != NULL)
+					{
+						//byteOffset.LowPart = byteOffset.HighPart = 0;
+						ntstatus = ZwReadFile(handle, NULL, NULL, NULL, &ioStatusBlock, bufferMapping, standardInfo.EndOfFile.LowPart, NULL, NULL);
+						if (NT_SUCCESS(ntstatus)) {
+							bufferMapping[standardInfo.EndOfFile.LowPart - 1] = '\0';
+							DbgPrint("%s\n", bufferMapping);
+							if (strstr(bufferMapping, THREAT_WORD)) {
+								rv = TRUE;
+							}
+						}
+					ExFreePoolWithTag(bufferMapping, TAG_BUFFER);
+					ZwClose(handle);
+				}
+			
 				}
 			}
-			ZwClose(handle);
 		}
 		return rv;
 	}
