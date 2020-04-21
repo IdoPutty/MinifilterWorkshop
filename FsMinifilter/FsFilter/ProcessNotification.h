@@ -3,6 +3,7 @@
 #include <ntstrsafe.h>
 
 #define MAX_PATH 512
+#define BUFFER_SIZE 30
 
 namespace ProcessNotification 
 {

@@ -11,8 +11,6 @@ BOOLEAN isThreatByFilename(PUNICODE_STRING fileName) {
 	/*																		*
 	/************************************************************************/
 
-	// ENTER CODE HERE
-
 	BOOLEAN rv = FsRtlIsNameInExpression(&THREAT_NAME, fileName, TRUE, NULL);
 
 	return rv;

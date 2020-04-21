@@ -10,7 +10,6 @@ PFLT_FILTER g_filterHandle;
 #pragma alloc_text(PAGE, FsFilterUnload)
 #endif
 
-
 ///  operation registration
 CONST FLT_OPERATION_REGISTRATION FilterCallbacks[] = {
 
