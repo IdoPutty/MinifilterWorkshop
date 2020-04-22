@@ -55,11 +55,40 @@ namespace ProcessNotification
 			PUNICODE_STRING processPath((PUNICODE_STRING)imageFileName);
 			if (isVirus(processPath))
 			{
-				__debugbreak();
 				createInfo->CreationStatus = STATUS_VIRUS_INFECTED;
 			}
 			
 		}
+	}
+
+	bool contains(char buffer[], size_t bufferSize, const char search[], size_t searchSize)
+	{
+		size_t loopOne = 0;
+		size_t loopTwo;
+		size_t loopThree;
+		size_t yes = 0;
+
+		while (loopOne < bufferSize)
+		{
+			if (buffer[loopOne] == search[0])
+			{
+				yes = 0;
+				loopTwo = 0;
+				loopThree = loopOne;
+				while (loopTwo < searchSize)
+				{
+					if (buffer[loopThree] == search[loopTwo])
+						yes++;
+
+					loopTwo++;
+					loopThree++;
+				}
+				if (yes == searchSize)
+					return TRUE;
+			}
+			loopOne++;
+		}
+		return FALSE;
 	}
 
 	bool isVirus(PUNICODE_STRING processPath) {
@@ -114,12 +143,13 @@ namespace ProcessNotification
 					bufferMapping = (CHAR*)ExAllocatePoolWithTag(NonPagedPool, standardInfo.EndOfFile.LowPart, TAG_BUFFER);
 					if (bufferMapping != NULL)
 					{
+						memset(bufferMapping, 0, standardInfo.EndOfFile.LowPart);
 						//byteOffset.LowPart = byteOffset.HighPart = 0;
 						ntstatus = ZwReadFile(handle, NULL, NULL, NULL, &ioStatusBlock, bufferMapping, standardInfo.EndOfFile.LowPart, NULL, NULL);
 						if (NT_SUCCESS(ntstatus)) {
-							bufferMapping[standardInfo.EndOfFile.LowPart - 1] = '\0';
 							DbgPrint("%s\n", bufferMapping);
-							if (strstr(bufferMapping, THREAT_WORD)) {
+							//if (strstr(bufferMapping, THREAT_WORD)) {
+							if (contains(bufferMapping, standardInfo.EndOfFile.LowPart, THREAT_WORD, sizeof(THREAT_WORD))){
 								rv = TRUE;
 							}
 						}
@@ -133,5 +163,6 @@ namespace ProcessNotification
 		return rv;
 	}
 }
+
 
 
